@@ -8,10 +8,10 @@ import numpy as np
 app = FastAPI()
 
 # 데이터프레임 로드
-df = pd.read_csv('recipe/data.csv')  
+df = pd.read_csv('data.csv')  
 
 # Word2Vec 모델 로드
-model = Word2Vec.load("recipe/recipe_word2vec_model.model")
+model = Word2Vec.load("recipe_word2vec_model.model")
 
 
 
