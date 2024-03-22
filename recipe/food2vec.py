@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 import pandas as pd
 from gensim.models import Word2Vec
 import numpy as np
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 
 app = FastAPI()
 
@@ -38,11 +40,12 @@ def calculate_cosine_similarity(document_vectors):
 
 cosine_similarities = calculate_cosine_similarity(document_vectors)
 
-@app.get("/recommendations/{title}")  # 경로 매개변수 사용
+@app.get("/recommendations/{title}")
 async def get_recommendations(title: str):
     try:
         recommendations = recommend_function(title)
-        return {"recommendations": recommendations}
+        content = jsonable_encoder({"recommendations": recommendations})
+        return JSONResponse(content=content, media_type="application/json", headers={"Content-Type": "application/json; charset=utf-8"})
     except Exception as e:
         raise HTTPException(status_code=404, detail=str(e))
 
