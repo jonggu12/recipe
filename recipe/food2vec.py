@@ -6,10 +6,10 @@ import numpy as np
 app = FastAPI()
 
 # 데이터프레임 로드
-df = pd.read_csv('/Users/choejong-gyu/Documents/GitHub/FASTAPI/recipe/data.csv')  
+df = pd.read_csv('data.csv')  
 
 # Word2Vec 모델 로드
-model = Word2Vec.load("/Users/choejong-gyu/Documents/GitHub/FASTAPI/recipe/recipe_word2vec_model.model")
+model = Word2Vec.load("recipe_word2vec_model.model")
 
 # 문서 벡터 리스트 생성 함수
 def get_document_vectors(document_list):
