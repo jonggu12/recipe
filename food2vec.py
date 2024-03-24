@@ -33,26 +33,60 @@ df = pd.read_csv('data.csv')
 # Word2Vec 모델 로드
 model = Word2Vec.load("recipe_word2vec_model.model")
 
-# Weaviate 쿼리 모델
+
 class RecipeQuery(BaseModel):
-    query: str
+    query: str = None  # 기본 쿼리 (옵션)
+    health_goal: str = None  # 건강 목적 (옵션)
+    ingredients: list[str] = []  # 재료 목록 (옵션)
+
 
 @app.post("/recipes/")
 async def get_recipes(recipe_query: RecipeQuery):
     try:
-        response = (client.query.get("Recipe", [
+        # where 절 구성을 위한 조건들을 담을 리스트 초기화
+        conditions = []
+        
+        # 건강 목적이 제공된 경우 conditions 리스트에 추가
+        if recipe_query.health_goal:
+            conditions.append({
+                "path": ["category"],
+                "operator": "Equal",
+                "valueString": recipe_query.health_goal
+            })
+        
+        # 재료가 제공된 경우, 각 재료에 대해 conditions 리스트에 추가
+        for ingredient in recipe_query.ingredients:
+            conditions.append({
+                "path": ["ingredient_name"],
+                "operator": "Equal",
+                "valueString": ingredient
+            })
+        
+        # 모든 조건을 And 연산자로 결합
+        if conditions:
+            where_clause = {
+                "operator": "And",
+                "operands": conditions
+            }
+        else:
+            where_clause = {}
+        
+        # Weaviate 쿼리 실행
+        response = client.query.get("Recipe", [
             "recipe_name",
             "summary",
             "ingredient_name",
             "full_step",
             "category",
             "image_link",
-        ]).with_hybrid(query=recipe_query.query, alpha=0).with_limit(4).do())
+        ]).with_where(where_clause).with_limit(10).do()
 
         return response
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
 
 # 문서 벡터 리스트 생성 함수
 def get_document_vectors(document_list):
